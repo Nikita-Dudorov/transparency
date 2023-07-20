@@ -29,14 +29,9 @@ void RayTracer::buildBVH(const std::shared_ptr<Scene> scene) {
 	if (m_bvh != nullptr)
 		m_bvh.reset();
 
-	std::vector<std::pair<size_t,size_t>> list; 
-	for (size_t mIndex = 0; mIndex < scene->numOfMeshes (); mIndex++) {
-		const auto& T = scene->mesh(mIndex)->triangleIndices();
-		for (size_t tIndex = 0; tIndex < T.size(); tIndex++) 
-			list.push_back (std::pair<size_t,size_t> (mIndex, tIndex));
-	}
-	
-	m_bvh = std::make_unique<BVH>(scene,list);
+	std::vector<std::pair<size_t,size_t>> list; 	
+	list = BVH::makeIndexPairSet(scene);
+	m_bvh = std::make_unique<BVH>(scene, list);
 }
 
 void RayTracer::render (const std::shared_ptr<Scene> scenePtr) {
@@ -59,7 +54,7 @@ bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, siz
 	float closest = std::numeric_limits<float>::max();
 	bool intersectionFound = false;
 	std::vector<std::pair<size_t,size_t>> candidateMeshTrianglePairs;
-	//candidateMeshTrianglePairs.reserve(16);
+	candidateMeshTrianglePairs.reserve(16);
 	std::vector<std::pair<size_t,size_t>> list; 
 	for (size_t mIndex = 0; mIndex < scene->numOfMeshes (); mIndex++) {
 		const auto& T = scene->mesh(mIndex)->triangleIndices();
@@ -67,13 +62,7 @@ bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, siz
 			list.push_back (std::pair<size_t,size_t> (mIndex, tIndex));
 	}
 	m_bvh->intersect(ray, candidateMeshTrianglePairs);
-	//if(candidateMeshTrianglePairs.size()>0)
-	//	std::cout << "*****" << candidateMeshTrianglePairs.size() << "*********" << std::endl;
-	// for (size_t mIndex = 0; mIndex < scene->numOfMeshes (); mIndex++) {
-	// 	const auto& T = scene->mesh(mIndex)->triangleIndices();
-	// 	for (size_t tIndex = 0; tIndex < T.size(); tIndex++) 
-	// 		candidateMeshTrianglePairs.push_back (std::pair<size_t,size_t> (mIndex, tIndex));
-	// }
+
 	for (size_t i = 0; i < candidateMeshTrianglePairs.size(); i++) {
 		size_t mIndex = candidateMeshTrianglePairs[i].first;
 		size_t tIndex = candidateMeshTrianglePairs[i].second;

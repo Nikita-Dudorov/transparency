@@ -22,8 +22,7 @@
 
 class BVH {
 public:
-   //compilation error, maybe need to change g++ version, but using this constructor will result in seg_fault
-   // BVH(const std::shared_ptr<Scene> scene);
+
     BVH(const std::shared_ptr<Scene> scene, std::vector<std::pair<size_t,size_t> >& indexPairSet);
 
     BVH(const BVH& bvh);
@@ -45,10 +44,11 @@ public:
     inline size_t triangleIndex() const { return m_triangleIndex; }
 
     void intersect(const Ray& r, std::vector<std::pair<size_t,size_t>>& candidateMeshTrianglePairs) const;
+
+    static std::vector<std::pair<size_t, size_t> > makeIndexPairSet(const std::shared_ptr<Scene> scene);
     
 private:
     BVH(const std::shared_ptr<Scene> scene, std::vector<std::pair<size_t, size_t> >& indexPairSet, size_t begin, size_t end);
-    std::vector<std::pair<size_t, size_t> > makeIndexPairSet(const std::shared_ptr<Scene> scene);
 
     BoundingBox m_bbox;
     BVH* m_left=nullptr;

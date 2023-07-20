@@ -31,9 +31,6 @@ struct AxisSort {
 	}
 };
 
-//compilation error, maybe need to change g++ version, but using this constructor will result in seg_fault
-//BVH::BVH(const std::shared_ptr<Scene> scene) : BVH(scene, makeIndexPairSet(scene)) {}
-
 BVH::BVH(const std::shared_ptr<Scene> scene, std::vector<std::pair<size_t, size_t> >& indexPairSet) : BVH(scene, indexPairSet, 0, indexPairSet.size()) {}
 
 BVH::BVH(const std::shared_ptr<Scene> scene,
@@ -58,7 +55,7 @@ BVH::BVH(const std::shared_ptr<Scene> scene,
 	size_t axis = m_bbox.dominantAxis();
 	auto median = indexPairSet.begin() + int(end - begin)/2;
 	// is too much work, only a partial sort is enough.
-	//std::sort(indexPairSet.begin() + int(begin), indexPairSet.begin() + int(end), AxisSort(scene, axis));
+	// std::sort(indexPairSet.begin() + int(begin), indexPairSet.begin() + int(end), AxisSort(scene, axis));
 	std::nth_element(indexPairSet.begin() + int(begin), median, indexPairSet.begin() + int(end), AxisSort(scene, axis));
 	
 	if (end - begin >= 2) {

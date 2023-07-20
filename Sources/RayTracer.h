@@ -51,7 +51,7 @@ private:
 	bool rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex, Hit& hit, bool anyHit);
 	inline bool rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex)
 	{ 
-		Hit hit = Hit(); //can not pass just Hit() in inline function
+		Hit hit = Hit();
 		return rayTrace (ray, scene, originMeshIndex, originTriangleIndex, hit, true);
 	};
 	glm::vec3 lightRadiance (const std::shared_ptr<LightSource> lightPtr, const glm::vec3 & position) const;
