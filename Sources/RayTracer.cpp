@@ -104,8 +104,9 @@ glm::vec3 RayTracer::materialReflectance (const std::shared_ptr<Scene> scenePtr,
 										  const std::shared_ptr<Material> materialPtr, 
 										  const glm::vec3& wi, 
 										  const glm::vec3& wo, 
-										  const glm::vec3& n) const {
-		return BRDF (wi, wo, n, materialPtr->albedo (), materialPtr->roughness (), materialPtr->metallicness ()); 
+										  const glm::vec3& n,
+										  const glm::vec2& textCoord) const {
+		return BRDF (wi, wo, n, textCoord, materialPtr->albedo (), materialPtr->roughness (), materialPtr->metallicness ()); 
 }
 
 glm::vec3 RayTracer::shade(const std::shared_ptr<Scene> scenePtr, const Ray & ray, const Hit& hit) {
@@ -113,6 +114,7 @@ glm::vec3 RayTracer::shade(const std::shared_ptr<Scene> scenePtr, const Ray & ra
 	const std::shared_ptr<Material> materialPtr = scenePtr->material(scenePtr->mesh2material(hit.m_meshIndex));
 	const auto& P = mesh->vertexPositions();
 	const auto& N = mesh->vertexNormals();
+	const auto& T = mesh->vertexTextCoords();
 	glm::mat4 modelMatrix = mesh->computeTransformMatrix ();
 	const glm::uvec3 & triangle = mesh->triangleIndices()[hit.m_triangleIndex];
 	float w = 1.f - hit.m_uCoord - hit.m_vCoord;
@@ -123,13 +125,17 @@ glm::vec3 RayTracer::shade(const std::shared_ptr<Scene> scenePtr, const Ray & ra
 	glm::vec3 hitNormal = normalize (glm::vec3 (normalMatrix * glm::vec4 (normalize (unormalizedHitNormal), 1.0)));
 	glm::vec3 wo = normalize(-ray.direction ());
 	glm::vec3 colorResponse (0.f, 0.f, 0.f);
+	glm::vec2 textCoord (0.f, 0.f);
+	if (!T.empty()){
+		textCoord = barycentricInterpolation(T[triangle[0]], T[triangle[1]], T[triangle[2]], w, hit.m_uCoord, hit.m_vCoord);
+	}  
 	for (size_t i = 0; i < scenePtr->numOfLightSources (); ++i) {
 		const std::shared_ptr<LightSource> light = scenePtr->lightSource (i);
 		glm::vec3 wi = normalize(-light->direction());
 		float wiDotN = max(0.f, dot(wi, hitNormal));
 		if (wiDotN <= 0.f)
 			continue;
-		colorResponse += lightRadiance (light, hitPosition) * materialReflectance(scenePtr, materialPtr, wi, wo, hitNormal) * wiDotN;
+		colorResponse += lightRadiance (light, hitPosition) * materialReflectance(scenePtr, materialPtr, wi, wo, hitNormal, textCoord) * wiDotN;
 	}
 	return colorResponse;
 }

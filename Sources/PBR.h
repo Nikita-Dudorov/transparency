@@ -31,7 +31,7 @@ inline float geometry (float NdotL, float NdotV, float roughness) {
 	return G1(NdotL,k) * G1(NdotV,k);
 }
 
-inline glm::vec3 BRDF (glm::vec3 L, glm::vec3 V, glm::vec3 N,  glm::vec3 albedo, float roughness, float metallic)  {
+inline glm::vec3 BRDF (glm::vec3 L, glm::vec3 V, glm::vec3 N, glm::vec2 textCoord, glm::vec3 albedo, float roughness, float metallic)  {
 	glm::vec3 diffuseColor = albedo * (1.0f - metallic);
 	glm::vec3 specularColor = mix(glm::vec3(0.08f), albedo, metallic);
 
@@ -51,6 +51,12 @@ inline glm::vec3 BRDF (glm::vec3 L, glm::vec3 V, glm::vec3 N,  glm::vec3 albedo,
 
 	glm::vec3 fd = diffuseColor * (glm::vec3(1.0f)-specularColor) / glm::pi<float>();
 	glm::vec3 fs = F * D * G / (4.0f);
+
+	// optional grid texture
+	if (textCoord != glm::vec2(0.0)){
+		float alpha = int(floor (10 * textCoord.x) + floor (10 * textCoord.y)) % 2;
+		fd = alpha * fd;
+	}
 
 	return (fd + fs);
 }

@@ -28,6 +28,7 @@ uniform Material material;
 // Shader inputs, linearly interpolated by default from the previous stage outputs (here the vertex shader)
 in vec3 fPosition; 
 in vec3 fNormal;
+in vec2 fTextCoord;
 
 out vec4 colorResponse; // Shader output: the color response attached to this fragment
 
@@ -79,6 +80,12 @@ vec3 BRDF (vec3 L, vec3 V, vec3 N, vec3 albedo, float roughness, float metallic)
 
     vec3 fd = diffuseColor * (vec3(1.0)-specularColor) / PI;
     vec3 fs = F * D * G / (4.0);
+
+	// optional grid texture
+	if (fTextCoord != vec2(0.0)){
+		float alpha = mod(floor (10 * fTextCoord.x) + floor (10 * fTextCoord.y), 2);
+		fd = alpha * fd;
+	}
   
     return (fd + fs);
 }

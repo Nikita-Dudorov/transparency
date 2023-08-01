@@ -288,6 +288,10 @@ void initScene () {
 	wallMeshPtr->vertexPositions().push_back (startP + glm::vec3 (2.f*extent, 0.f, 0.f));
 	wallMeshPtr->vertexPositions().push_back (startP + glm::vec3 (2.f*extent, 2.f*extent, 0.f));
 	wallMeshPtr->vertexPositions().push_back (startP + glm::vec3 (0.f, 2.f*extent, 0.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 1.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 1.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 0.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 0.f));
 	wallMeshPtr->triangleIndices().push_back (glm::uvec3 (0, 1, 2));
 	wallMeshPtr->triangleIndices().push_back (glm::uvec3 (0, 2, 3));
 	wallMeshPtr->recomputePerVertexNormals ();

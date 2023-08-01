@@ -37,5 +37,6 @@ void Mesh::recomputePerVertexNormals (bool angleBased) {
 void Mesh::clear () {
 	m_vertexPositions.clear ();
 	m_vertexNormals.clear ();
+	m_vertexTextCoords.clear();
 	m_triangleIndices.clear ();
 }

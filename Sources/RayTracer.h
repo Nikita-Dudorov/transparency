@@ -59,7 +59,8 @@ private:
 								   const std::shared_ptr<Material> material, 
 								   const glm::vec3& wi, 
 								   const glm::vec3& wo, 
-								   const glm::vec3& n) const;
+								   const glm::vec3& n,
+								   const glm::vec2& textCoord) const;
 	glm::vec3 shade(const std::shared_ptr<Scene> scenePtr, const Ray & ray, const Hit& hit);
 	glm::vec3 sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex);
 

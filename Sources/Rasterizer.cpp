@@ -146,6 +146,11 @@ void Rasterizer::clear () {
 		glDeleteBuffers (1, &vbo);
 	}
 	m_normalVbos.clear ();
+	for (unsigned int i = 0; i < m_textVbos.size (); i++) {
+		GLuint vbo = m_textVbos[i];
+		glDeleteBuffers (1, &vbo);
+	}
+	m_textVbos.clear ();
 	for (unsigned int i = 0; i < m_ibos.size (); i++) {
 		GLuint ibo = m_ibos[i];
 		glDeleteBuffers (1, &ibo);
@@ -167,7 +172,7 @@ GLuint Rasterizer::genGPUBuffer (size_t elementSize, size_t numElements, const v
 	return vbo;
 }
 
-GLuint Rasterizer::genGPUVertexArray (GLuint posVbo, GLuint ibo, bool hasNormals, GLuint normalVbo) {
+GLuint Rasterizer::genGPUVertexArray (GLuint posVbo, GLuint ibo, bool hasNormals, GLuint normalVbo, bool hasTexture, GLuint textVbo) {
 	GLuint vao;
 	glGenVertexArrays (1, &vao); // Create a single handle that joins together attributes (vertex positions, normals) and connectivity (triangles indices)
 	glBindVertexArray (vao);
@@ -179,6 +184,12 @@ GLuint Rasterizer::genGPUVertexArray (GLuint posVbo, GLuint ibo, bool hasNormals
 		glEnableVertexAttribArray (attrib);
 		glBindBuffer (GL_ARRAY_BUFFER, normalVbo);
 		glVertexAttribPointer (attrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof (GLfloat), 0);
+		attrib++; 
+	}
+	if (hasTexture) {
+		glEnableVertexAttribArray (attrib);
+		glBindBuffer (GL_ARRAY_BUFFER, textVbo);
+		glVertexAttribPointer (attrib, 3, GL_FLOAT, GL_FALSE, 2 * sizeof (GLfloat), 0);
 		attrib++; // Replicate this strategy for more vertex attributes
 	}
 	glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, ibo);
@@ -189,8 +200,16 @@ GLuint Rasterizer::genGPUVertexArray (GLuint posVbo, GLuint ibo, bool hasNormals
 GLuint Rasterizer::toGPU (std::shared_ptr<Mesh> meshPtr) {
 	GLuint posVbo = genGPUBuffer (3 * sizeof (float), meshPtr->vertexPositions().size(), meshPtr->vertexPositions().data ()); // Position GPU vertex buffer
 	GLuint normalVbo = genGPUBuffer (3 * sizeof (float), meshPtr->vertexNormals().size(), meshPtr->vertexNormals().data ()); // Normal GPU vertex buffer
+	GLuint textVbo; // Texture GPU vertex buffer
+	bool hasTexture = meshPtr->vertexTextCoords().empty() ? false : true;
+	if (hasTexture){
+		textVbo = genGPUBuffer (2 * sizeof (float), meshPtr->vertexTextCoords().size(), meshPtr->vertexTextCoords().data ());
+	}
+	else {
+		textVbo = 0;
+	}
 	GLuint ibo = genGPUBuffer (sizeof (glm::uvec3), meshPtr->triangleIndices().size(), meshPtr->triangleIndices().data ()); // triangle GPU index buffer
-	GLuint vao = genGPUVertexArray (posVbo, ibo, true, normalVbo);
+	GLuint vao = genGPUVertexArray (posVbo, ibo, true, normalVbo, hasTexture, textVbo);
 	return vao;
 }
 
@@ -201,6 +220,8 @@ void Rasterizer::initScreeQuad () {
 	m_screenQuadVao = genGPUVertexArray (
 		genGPUBuffer (3*sizeof(float), 4, pData.data()),
 		genGPUBuffer (3*sizeof(unsigned int), 2, iData.data()),
+		false,
+		0,
 		false,
 		0);
 }
