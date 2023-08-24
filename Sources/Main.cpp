@@ -258,7 +258,7 @@ void initScene () {
 	float length = maxP[2] - minP[2];
 	meshScale = glm::max (width, glm::max (height, length));
 
-	auto mainMaterialPtr = std::make_shared<Material> (glm::vec3 (1.0, 0.85, 0.0f), 0.4, 0.6);
+	auto mainMaterialPtr = std::make_shared<Material> (glm::vec3 (1.0, 0.85, 0.0f), 0.4, 0.6, 1.33);
 	scenePtr->add (mainMeshPtr);
 	scenePtr->add (mainMaterialPtr);
 	scenePtr->assignMaterial (0, 0);

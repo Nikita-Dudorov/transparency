@@ -31,6 +31,7 @@ public:
 	void setResolution (int width, int height);
 	void updateDisplayedImageTexture (std::shared_ptr<Image> imagePtr);
 	void initDisplayedImage ();
+	void initOpaquePart ();
 	/// Loads and compile the programmable shader pipeline
 	void loadShaderProgram (const std::string & basePath);
 	
@@ -51,9 +52,13 @@ private:
 
 	/// Pointer to GPU shader pipeline i.e., set of shaders structured in a GPU program
 	std::shared_ptr<ShaderProgram> m_pbrShaderProgramPtr; // A GPU program contains at least a vertex shader and a fragment shader. This one computes PBR reflectance.
+	std::shared_ptr<ShaderProgram> m_transparencyShaderProgramPtr; // ---//--- This one computes transparency effects
 	std::shared_ptr<ShaderProgram> m_displayShaderProgramPtr; // Full screen quad shader program, for displaying 2D color images
 	GLuint m_displayImageTex; // Texture storing the image to display in non-rasterization mode
 	GLuint m_screenQuadVao;  // Full-screen quad drawn when displaying an image (no scene rasterization) 
+	GLuint m_opaqueFBO; // frame buffer to store opaque part of the scene 
+	GLuint m_opaqueRBO; // render buffer to store opaque part of the scene
+	GLuint m_opaqueTex; // texture to store rendering of the opaque part of the scene
 
 	std::vector<GLuint> m_vaos;
 	std::vector<GLuint> m_posVbos;
