@@ -54,7 +54,7 @@ inline glm::vec3 BRDF (glm::vec3 L, glm::vec3 V, glm::vec3 N, glm::vec2 textCoor
 
 	// optional grid texture
 	if (textCoord != glm::vec2(0.0)){
-		float alpha = int(floor (10 * textCoord.x) + floor (10 * textCoord.y)) % 2;
+		float alpha = int(floor (20 * textCoord.x) + floor (20 * textCoord.y)) % 2;
 		fd = alpha * fd;
 	}
 
