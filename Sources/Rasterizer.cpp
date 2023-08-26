@@ -13,14 +13,14 @@
 
 void Rasterizer::init (const std::string & basePath, const std::shared_ptr<Scene> scenePtr) {
  	glCullFace (GL_BACK);     // Specifies the faces to cull (here the ones pointing away from the camera)
-	//glEnable (GL_CULL_FACE); // Enables face culling (based on the orientation defined by the CW/CCW enumeration).
+	glEnable (GL_CULL_FACE); // Enables face culling (based on the orientation defined by the CW/CCW enumeration).
 	glDepthFunc (GL_LESS); // Specify the depth test for the z-buffer
 	glEnable (GL_DEPTH_TEST); // Enable the z-buffer test in the rasterization
 	glClearColor (0.0f, 0.0f, 0.0f, 1.0f); // specify the background color, used any time the framebuffer is cleared
 	// GPU resources
 	initScreeQuad ();
 	loadShaderProgram (basePath);
-	//initDisplayedImage ();
+	initDisplayedImage ();
 	initOpaquePart ();
 	// Allocate GPU ressources for the heavy data components of the scene 
 	size_t numOfMeshes = scenePtr->numOfMeshes ();
@@ -144,7 +144,7 @@ void Rasterizer::render (std::shared_ptr<Scene> scenePtr) {
 	for (size_t i = 0; i < numOfMeshes; i++) {
 		size_t matId = scenePtr->mesh2material (i);
 		std::shared_ptr<Material> materialPtr = scenePtr->material(matId);
-		if (materialPtr->refraction() != 0) {
+		if (materialPtr->transparency() != 0) {
 			continue;
 		}
 		setMaterial (materialPtr);
@@ -165,13 +165,13 @@ void Rasterizer::render (std::shared_ptr<Scene> scenePtr) {
 	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, m_opaqueTex);
 	glBindVertexArray (m_screenQuadVao); // Activate the VAO storing geometry data
-	glDisable (GL_DEPTH_TEST);
+	glDisable (GL_DEPTH_TEST); // no depth test for screen quad
 	glDrawElements (GL_TRIANGLES, static_cast<GLsizei> (6), GL_UNSIGNED_INT, 0);
 	glEnable (GL_DEPTH_TEST);
 	for (size_t i = 0; i < numOfMeshes; i++) {
 		size_t matId = scenePtr->mesh2material (i);
 		std::shared_ptr<Material> materialPtr = scenePtr->material(matId);
-		if (materialPtr->refraction() == 0) {
+		if (materialPtr->transparency() == 0) {
 			continue;
 		}
 		setMaterial (materialPtr);
@@ -295,7 +295,7 @@ GLuint Rasterizer::toGPU (std::shared_ptr<Mesh> meshPtr) {
 
 void Rasterizer::initScreeQuad () {
 	std::vector<float> pData = {-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0};
-	std::vector<float> nData = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	std::vector<float> nData = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // no normal for screen texture
 	std::vector<float> uvData = {0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0};
 	std::vector<unsigned int> iData = {0, 1, 2, 0, 2, 3};
 	m_screenQuadVao = genGPUVertexArray (
@@ -351,12 +351,12 @@ void Rasterizer::setMaterial (std::shared_ptr<Material> materialPtr) {
 	m_pbrShaderProgramPtr->set ("material.albedo", materialPtr->albedo ());
 	m_pbrShaderProgramPtr->set ("material.roughness", materialPtr->roughness ());
 	m_pbrShaderProgramPtr->set ("material.metallicness", materialPtr->metallicness ());
-	m_pbrShaderProgramPtr->set ("material.refraction", materialPtr->refraction ());
 
 	m_transparencyShaderProgramPtr->use ();
 	m_transparencyShaderProgramPtr->set ("material.albedo", materialPtr->albedo ());
 	m_transparencyShaderProgramPtr->set ("material.roughness", materialPtr->roughness ());
 	m_transparencyShaderProgramPtr->set ("material.metallicness", materialPtr->metallicness ());
+	m_transparencyShaderProgramPtr->set ("material.transparency", materialPtr->transparency ());
 	m_transparencyShaderProgramPtr->set ("material.refraction", materialPtr->refraction ());
 }
 

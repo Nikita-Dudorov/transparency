@@ -17,10 +17,15 @@
 
 class Material {
 public:
-	Material (const glm::vec3& diffuseAlbedo = glm::vec3(0.6f, 0.6f, 0.6f), float roughness = 0.5f, float metallicness = 0.f, float refraction = 0.f)
+	Material (const glm::vec3& diffuseAlbedo = glm::vec3(0.6f, 0.6f, 0.6f), 
+			  float roughness = 0.5f, 
+			  float metallicness = 0.f,
+			  float transparency = 0.f, 
+			  float refraction = 1.f)
 		: m_albedo (diffuseAlbedo), 
 		  m_roughness (roughness), 
 		  m_metallicness (metallicness),
+		  m_transparency (transparency),
 		  m_refraction (refraction) {}
 
 	virtual ~Material () {}
@@ -31,6 +36,8 @@ public:
 	inline void setRoughness (float roughness) { m_roughness = roughness; }
 	inline float metallicness () const { return m_metallicness; }
 	inline void setMetallicness (float metallicness) { m_metallicness = metallicness; }
+	inline float transparency () const { return m_transparency; }
+	inline void setTransparency (float transparency) { m_transparency = transparency; }
 	inline float refraction () const { return m_refraction; }
 	inline void setRefraction (float refraction) { m_refraction = refraction; }
 
@@ -38,6 +45,7 @@ private:
 	glm::vec3 m_albedo;
 	float m_roughness;
 	float m_metallicness;
-	float m_refraction = 0; // correspond to opaque 
+	float m_transparency = 0; // opaque
+	float m_refraction = 1; // no refraction 
 };
 

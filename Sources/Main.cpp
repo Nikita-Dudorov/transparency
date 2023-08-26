@@ -258,7 +258,7 @@ void initScene () {
 	float length = maxP[2] - minP[2];
 	meshScale = glm::max (width, glm::max (height, length));
 
-	auto mainMaterialPtr = std::make_shared<Material> (glm::vec3 (1.0, 0.85, 0.0f), 0.4, 0.6, 1.33);
+	auto mainMaterialPtr = std::make_shared<Material> (glm::vec3 (0.78, 0.89, 0.88), 0.1, 0.9, 0.5, 1.2); // blue glass
 	scenePtr->add (mainMeshPtr);
 	scenePtr->add (mainMaterialPtr);
 	scenePtr->assignMaterial (0, 0);
@@ -288,10 +288,10 @@ void initScene () {
 	wallMeshPtr->vertexPositions().push_back (startP + glm::vec3 (2.f*extent, 0.f, 0.f));
 	wallMeshPtr->vertexPositions().push_back (startP + glm::vec3 (2.f*extent, 2.f*extent, 0.f));
 	wallMeshPtr->vertexPositions().push_back (startP + glm::vec3 (0.f, 2.f*extent, 0.f));
-	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 1.f));
-	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 1.f));
-	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 0.f));
 	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 0.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 0.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 1.f));
+	wallMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 1.f));
 	wallMeshPtr->triangleIndices().push_back (glm::uvec3 (0, 1, 2));
 	wallMeshPtr->triangleIndices().push_back (glm::uvec3 (0, 2, 3));
 	wallMeshPtr->recomputePerVertexNormals ();

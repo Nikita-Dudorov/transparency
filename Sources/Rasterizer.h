@@ -56,8 +56,8 @@ private:
 	std::shared_ptr<ShaderProgram> m_displayShaderProgramPtr; // Full screen quad shader program, for displaying 2D color images
 	GLuint m_displayImageTex; // Texture storing the image to display in non-rasterization mode
 	GLuint m_screenQuadVao;  // Full-screen quad drawn when displaying an image (no scene rasterization) 
-	GLuint m_opaqueFBO; // frame buffer to store opaque part of the scene 
-	GLuint m_opaqueRBO; // render buffer to store opaque part of the scene
+	GLuint m_opaqueFBO; // frame buffer to render in for the opaque part of the scene 
+	GLuint m_opaqueRBO; // render buffer to store depth for the opaque part of the scene
 	GLuint m_opaqueTex; // texture to store rendering of the opaque part of the scene
 
 	std::vector<GLuint> m_vaos;
