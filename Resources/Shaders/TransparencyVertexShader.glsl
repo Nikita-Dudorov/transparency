@@ -11,13 +11,13 @@ out vec3 fNormal;
 out vec2 fTextCoord;
 
 void main() {
-    vec4 p = viewMat * modelMat * vec4 (vPosition, 1.0);
     if (vNormal == vec3(0.0)) { // screen texture
         gl_Position =  vec4 (vPosition, 1.0);
+        return;
     }
-    else {
-        gl_Position =  projectionMat * p; // mandatory to fire rasterization properly
-    }
+
+    vec4 p = viewMat * modelMat * vec4 (vPosition, 1.0);
+    gl_Position =  projectionMat * p; 
     vec4 n = normalMat * vec4 (vNormal, 1.0);
     fPosition = p.xyz;
     fNormal = normalize (n.xyz);
