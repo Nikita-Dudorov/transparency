@@ -83,7 +83,7 @@ vec3 BRDF (vec3 L, vec3 V, vec3 N, vec3 albedo, float roughness, float metallic)
 
 	// optional grid texture
 	if (fTextCoord != vec2(0.0)){
-		float alpha = mod(floor (10 * fTextCoord.x) + floor (10 * fTextCoord.y), 2);
+		float alpha = mod(floor (20 * fTextCoord.x) + floor (20 * fTextCoord.y), 2);
 		fd = alpha * fd;
 	}
   
