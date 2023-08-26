@@ -44,13 +44,13 @@ void RayTracer::render (const std::shared_ptr<Scene> scenePtr) {
 		for (int x = 0; x < width; x++) {
 			glm::vec3 colorResponse (0.f, 0.f, 0.f);
 			Ray ray = cameraPtr->rayAt((float(x) + 0.5) / width, 1.f - (float(y) + 0.5) / height);
-			colorResponse += sample (scenePtr, ray, 0, 0);
+			colorResponse += sample (scenePtr, ray, -1, -1, false);
 			m_imagePtr->operator()(x, y) = colorResponse;
 		}
 	}
 }
 
-bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex, Hit& hit, bool anyHit) {
+bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex, Hit& hit, bool insideHit) {
 	float closest = std::numeric_limits<float>::max();
 	bool intersectionFound = false;
 	std::vector<std::pair<size_t,size_t>> candidateMeshTrianglePairs;
@@ -66,8 +66,10 @@ bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, siz
 	for (size_t i = 0; i < candidateMeshTrianglePairs.size(); i++) {
 		size_t mIndex = candidateMeshTrianglePairs[i].first;
 		size_t tIndex = candidateMeshTrianglePairs[i].second;
-		if (anyHit && mIndex == originMeshIndex && tIndex == originTriangleIndex)
-				continue;
+		if (!insideHit && mIndex == originMeshIndex && tIndex == originTriangleIndex)
+			continue;
+		if (insideHit && mIndex == originMeshIndex) // ray is currently inside an object, 
+			continue;							    // approximation: we limit the number of hits with the same mesh by 2
 		const auto& mesh = scene->mesh(mIndex);
 		const auto& triangleIndices = mesh->triangleIndices();
 		const glm::uvec3& triangle = triangleIndices[tIndex];
@@ -79,9 +81,7 @@ bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, siz
 								  glm::vec3 (modelMatrix * glm::vec4 (P[triangle[2]], 1.0)), 
 								  ut, vt, dt) == true) {
 			if (dt > 0.f) {
-				if (anyHit)
-					return true;
-				else if (dt < closest) {
+				if (dt < closest) {
 					intersectionFound = true;
 					closest = dt;
 					hit.m_meshIndex = mIndex;
@@ -140,12 +140,75 @@ glm::vec3 RayTracer::shade(const std::shared_ptr<Scene> scenePtr, const Ray & ra
 	return colorResponse;
 }
 
+std::pair<glm::vec3, glm::vec3> RayTracer::hitPN (const std::shared_ptr<Scene> scenePtr, const Hit& hit) {
+	const auto& mesh = scenePtr->mesh(hit.m_meshIndex);
+	const auto& P = mesh->vertexPositions();
+	const auto& N = mesh->vertexNormals();
+	glm::mat4 modelMatrix = mesh->computeTransformMatrix ();
+	const glm::uvec3 & triangle = mesh->triangleIndices()[hit.m_triangleIndex];
+	float w = 1.f - hit.m_uCoord - hit.m_vCoord;
+	glm::vec3 hitPosition = barycentricInterpolation(P[triangle[0]], P[triangle[1]], P[triangle[2]], w, hit.m_uCoord, hit.m_vCoord);
+	glm::vec3 unormalizedHitNormal = barycentricInterpolation(N[triangle[0]], N[triangle[1]], N[triangle[2]], w, hit.m_uCoord, hit.m_vCoord);
+	glm::mat4 normalMatrix = glm::transpose (glm::inverse (modelMatrix));
+	glm::vec3 hitNormal = normalize (glm::vec3 (normalMatrix * glm::vec4 (normalize (unormalizedHitNormal), 1.0)));
+	return std::pair(hitPosition, hitNormal);
+}
+
+float RayTracer::transmissionCoeff (const glm::vec3& wo, const glm::vec3& n, float refraction) {
+	float n_r = refraction;
+	float k = 1 - sqr(n_r)*(1 - sqr(dot(n, wo)));
+	return k; // if k <= 0 -> no light transmission
+}
+
+Ray RayTracer::refractRay (const glm::vec3& wo, const glm::vec3& n, const glm::vec3& p, float refraction, float transmissionK) {
+	float n_r = refraction;
+	float k = transmissionK;
+	glm::vec3 direction = -n_r * wo - (n_r - dot(n, wo) + sqrt(k)) * n;
+	glm::vec3 origin = p;
+	Ray refracted_ray(origin, direction);
+	return refracted_ray; 
+}
+
 // Preparing for Monte Carlo Path Tracing...
-glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex) {
+glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex, bool insideHit = false) {
 	Hit hit;
-	bool intersectionFound = rayTrace(ray, scenePtr, originMeshIndex, originTriangleIndex, hit, false);
+	bool intersectionFound = rayTrace(ray, scenePtr, originMeshIndex, originTriangleIndex, hit, insideHit);
+	bool single_refraction = true;
 	if (intersectionFound && hit.m_distance > 0.f) {
-		return shade(scenePtr, ray, hit);
-	} else 
-		return scenePtr->backgroundColor (); 
+		std::pair<glm::vec3,glm::vec3> PN = hitPN(scenePtr, hit);
+		glm::vec3 hitPosition = PN.first;
+		glm::vec3 hitNormal = PN.second;
+		glm::vec3 wo = normalize(-ray.direction ());
+		const std::shared_ptr<Material> materialPtr = scenePtr->material(scenePtr->mesh2material(hit.m_meshIndex));
+		float transparency = materialPtr->transparency();
+
+		if (transparency != 0) { // transparent
+			float refraction = materialPtr->refraction();
+			float transmissionK = transmissionCoeff(wo, hitNormal, refraction);
+			bool inside = hit.m_meshIndex == originMeshIndex ? true : false;
+			if (transmissionK > 0) { // refraction
+				Ray refracted_ray = refractRay(wo, hitNormal, hitPosition, refraction, transmissionK);
+				if (inside) { // hit inside an object
+					return sample(scenePtr, refracted_ray, hit.m_meshIndex, hit.m_triangleIndex, true);
+				}
+				else{
+					return glm::mix(shade(scenePtr, ray, hit), sample(scenePtr, refracted_ray, hit.m_meshIndex, hit.m_triangleIndex, single_refraction), transparency);
+				}
+			}
+			else { // no refraction
+				if (inside) { // hit inside an object
+					return glm::vec3(0.0); // approximation: suppose that ray lost all its energy inside the object
+				}
+				else {
+					return shade(scenePtr, ray, hit);	
+				}
+			}
+		}
+		else { // opaque 
+			return shade(scenePtr, ray, hit);
+		}
+	} 
+	else {
+		return scenePtr->backgroundColor ();
+	}
 }

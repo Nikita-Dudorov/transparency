@@ -48,7 +48,7 @@ private:
 		float m_distance;
 	};
 
-	bool rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex, Hit& hit, bool anyHit);
+	bool rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex, Hit& hit, bool insideHit);
 	inline bool rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, size_t originMeshIndex, size_t originTriangleIndex)
 	{ 
 		Hit hit = Hit();
@@ -62,7 +62,10 @@ private:
 								   const glm::vec3& n,
 								   const glm::vec2& textCoord) const;
 	glm::vec3 shade(const std::shared_ptr<Scene> scenePtr, const Ray & ray, const Hit& hit);
-	glm::vec3 sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex);
+	std::pair<glm::vec3, glm::vec3> hitPN (const std::shared_ptr<Scene> scenePtr, const Hit& hit);
+	float transmissionCoeff (const glm::vec3& wo, const glm::vec3& n, float refraction);
+	Ray refractRay (const glm::vec3& wo, const glm::vec3& n, const glm::vec3& p, float refraction, float transmissionK);
+	glm::vec3 sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex, bool insideHit);
 
 	std::shared_ptr<Image> m_imagePtr;
 	
