@@ -230,8 +230,8 @@ void initGLFW () {
 
 void initScene () {
 	scenePtr = std::make_shared<Scene> ();
-	//scenePtr->setBackgroundColor (glm::vec3 (0.1f, 0.5f, 0.95f));
-	scenePtr->setBackgroundColor (glm::vec3 (0.0f, 0.0f, 0.0f));
+	scenePtr->setBackgroundColor (glm::vec3 (0.78, 0.89, 0.88));
+	//scenePtr->setBackgroundColor (glm::vec3 (0.f, 0.f, 0.f));
 
 	// Main object
 
@@ -258,7 +258,7 @@ void initScene () {
 	float length = maxP[2] - minP[2];
 	meshScale = glm::max (width, glm::max (height, length));
 
-	auto mainMaterialPtr = std::make_shared<Material> (glm::vec3 (0.78, 0.89, 0.88), 0.1, 0.9, 0.5, 1.2); // blue glass
+	auto mainMaterialPtr = std::make_shared<Material> (glm::vec3 (0.78, 0.89, 0.88), 0.1, 0.0, 0.5, 1.2, 0.8); // blue glass
 	scenePtr->add (mainMeshPtr);
 	scenePtr->add (mainMaterialPtr);
 	scenePtr->assignMaterial (0, 0);

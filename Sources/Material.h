@@ -21,12 +21,14 @@ public:
 			  float roughness = 0.5f, 
 			  float metallicness = 0.f,
 			  float transparency = 0.f, 
-			  float refraction = 1.f)
+			  float refraction = 1.f,
+			  float reflectance = 0.f)
 		: m_albedo (diffuseAlbedo), 
 		  m_roughness (roughness), 
 		  m_metallicness (metallicness),
 		  m_transparency (transparency),
-		  m_refraction (refraction) {}
+		  m_refraction (refraction),
+		  m_reflectance (reflectance) {}
 
 	virtual ~Material () {}
 
@@ -40,6 +42,8 @@ public:
 	inline void setTransparency (float transparency) { m_transparency = transparency; }
 	inline float refraction () const { return m_refraction; }
 	inline void setRefraction (float refraction) { m_refraction = refraction; }
+	inline float reflectance () const { return m_reflectance; }
+	inline void setReflectance (float reflectance) { m_reflectance = reflectance; }
 
 private:
 	glm::vec3 m_albedo;
@@ -47,5 +51,6 @@ private:
 	float m_metallicness;
 	float m_transparency = 0; // opaque
 	float m_refraction = 1; // no refraction 
+	float m_reflectance = 0; // no reflection
 };
 

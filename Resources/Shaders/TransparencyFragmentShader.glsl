@@ -17,18 +17,18 @@ struct Material {
 	float metallicness;
 	float transparency;
 	float refraction;
+	float reflectance;
 };
 
 const int MAX_NUM_OF_LIGHT_SOURCES = 8;
 
 // Shader uniform variables, set from the CPU side code
 uniform sampler2D imageTex;
-uniform int width;
-uniform int height;
 
 uniform mat4 transInvViewMat, projectionMat;
 uniform int numOfLightSources;
 uniform LightSource lightSources[MAX_NUM_OF_LIGHT_SOURCES]; 
+uniform vec3 bgColor;
 uniform Material material;
 
 // Shader inputs, linearly interpolated by default from the previous stage outputs (here the vertex shader)
@@ -141,7 +141,6 @@ vec2 RefractedRayScreen (vec3 wo, vec3 n, float refraction, float kTransmission)
 
 void main () {
 	if (material.transparency == 0.0) { // Opaque background
-		//colorResponse = vec4 (texture(imageTex, vec2 (gl_FragCoord.x/width, gl_FragCoord.y/height)).rgb, 1.0);
 		colorResponse = vec4 (texture(imageTex, fTextCoord).rgb, 1.0);
 		return;	
 	}
@@ -156,7 +155,7 @@ void main () {
 		vec3 transmissionColorResponse = texture(imageTex, offset).rgb; 
 		colorResponse = vec4 (mix (pbrColorResponse, transmissionColorResponse, material.transparency), 1.0);
 	}
-	else { // no refraction
-		colorResponse = vec4 (pbrColorResponse, 1.0);
+	else { // no refraction -> reflect environment
+		colorResponse = vec4 (mix (pbrColorResponse, bgColor, material.reflectance), 1.0);
 	}
 }

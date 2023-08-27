@@ -129,11 +129,6 @@ void Rasterizer::render (std::shared_ptr<Scene> scenePtr) {
 	size_t numOfMeshes = scenePtr->numOfMeshes ();
 	setLightSources (scenePtr);
 	setCamera (scenePtr);
-	// get frame size
-	GLint viewport[4];
-    glGetIntegerv (GL_VIEWPORT, viewport);
-	int width = viewport[2];
-	int height = viewport[3];
 	
 	// first stage: draw opaque objects
 	glBindFramebuffer (GL_FRAMEBUFFER, m_opaqueFBO);
@@ -160,8 +155,6 @@ void Rasterizer::render (std::shared_ptr<Scene> scenePtr) {
 	// second stage: draw transparent objects
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Erase the color and z buffers.
 	m_transparencyShaderProgramPtr->use (); // Activate the program to be used for upcoming primitive
-	m_transparencyShaderProgramPtr->set ("width", width);
-	m_transparencyShaderProgramPtr->set ("height", height);
 	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, m_opaqueTex);
 	glBindVertexArray (m_screenQuadVao); // Activate the VAO storing geometry data
@@ -344,6 +337,7 @@ void Rasterizer::setLightSources (std::shared_ptr<Scene> scenePtr) {
 		m_transparencyShaderProgramPtr->set (locStr + std::string(".color"), scenePtr->lightSource(i)->color());
 		m_transparencyShaderProgramPtr->set (locStr + std::string(".intensity"), scenePtr->lightSource(i)->intensity());
 	}
+	m_transparencyShaderProgramPtr->set ("bgColor", scenePtr->backgroundColor());
 }
 
 void Rasterizer::setMaterial (std::shared_ptr<Material> materialPtr) {
@@ -358,6 +352,7 @@ void Rasterizer::setMaterial (std::shared_ptr<Material> materialPtr) {
 	m_transparencyShaderProgramPtr->set ("material.metallicness", materialPtr->metallicness ());
 	m_transparencyShaderProgramPtr->set ("material.transparency", materialPtr->transparency ());
 	m_transparencyShaderProgramPtr->set ("material.refraction", materialPtr->refraction ());
+	m_transparencyShaderProgramPtr->set ("material.reflectance", materialPtr->reflectance ());
 }
 
 void Rasterizer::draw (size_t meshId, size_t triangleCount) {

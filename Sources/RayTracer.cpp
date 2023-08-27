@@ -173,7 +173,7 @@ Ray RayTracer::refractRay (const glm::vec3& wo, const glm::vec3& n, const glm::v
 glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex, bool insideHit = false) {
 	Hit hit;
 	bool intersectionFound = rayTrace(ray, scenePtr, originMeshIndex, originTriangleIndex, hit, insideHit);
-	bool single_refraction = true;
+	bool single_refraction = false;
 	if (intersectionFound && hit.m_distance > 0.f) {
 		std::pair<glm::vec3,glm::vec3> PN = hitPN(scenePtr, hit);
 		glm::vec3 hitPosition = PN.first;
@@ -191,7 +191,7 @@ glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & 
 				if (inside) { // hit inside an object
 					return sample(scenePtr, refracted_ray, hit.m_meshIndex, hit.m_triangleIndex, true);
 				}
-				else{
+				else{ // mix reflected and transmitied light
 					return glm::mix(shade(scenePtr, ray, hit), sample(scenePtr, refracted_ray, hit.m_meshIndex, hit.m_triangleIndex, single_refraction), transparency);
 				}
 			}
@@ -199,8 +199,9 @@ glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & 
 				if (inside) { // hit inside an object
 					return glm::vec3(0.0); // approximation: suppose that ray lost all its energy inside the object
 				}
-				else {
-					return shade(scenePtr, ray, hit);	
+				else { // reflect environment
+					float reflectance = materialPtr->reflectance();
+					return glm::mix(shade(scenePtr, ray, hit), scenePtr->backgroundColor (), reflectance);	
 				}
 			}
 		}
