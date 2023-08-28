@@ -1,3 +1,11 @@
+<figure style="text-align: center;">
+    <img src="https://github.com/Nikita-Dudorov/transparency/blob/main/images/real1.png" width="400" />
+</figure>
+
+<figure style="text-align: center;">
+    <img src="https://github.com/Nikita-Dudorov/transparency/blob/main/images/shader_n12.png" width="400" />
+</figure>
+
 # MyRenderer
 ## Base code for INF584 "Image Synthesis" Assignments
 ## The base code is modified and extended to refraction and transparency effects
@@ -9,6 +17,8 @@ Author: Tamy Boubekeur (tamy.boubekeur@telecom-paris.fr)
 Modified by: Nikita Dudorov
 
 ### Building
+
+Download the glad library: https://github.com/Dav1dde/glad
 
 This is a standard CMake project. Building it consists in running:
 
