@@ -1,9 +1,12 @@
 # MyRenderer
 ## Base code for INF584 "Image Synthesis" Assignments
+## The base code is modified and extended to refraction and transparency effects
 
 "A" solution for the basic ray tracing assignment.
 
 Author: Tamy Boubekeur (tamy.boubekeur@telecom-paris.fr)
+
+Modified by: Nikita Dudorov
 
 ### Building
 
