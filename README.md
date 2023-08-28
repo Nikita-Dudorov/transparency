@@ -1,8 +1,8 @@
-<figure style="text-align: center;">
+<figure>
     <img src="https://github.com/Nikita-Dudorov/transparency/blob/main/images/real1.png" width="400" />
 </figure>
 
-<figure style="text-align: center;">
+<figure>
     <img src="https://github.com/Nikita-Dudorov/transparency/blob/main/images/shader_n12.png" width="400" />
 </figure>
 
