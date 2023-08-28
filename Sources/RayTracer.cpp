@@ -68,8 +68,8 @@ bool RayTracer::rayTrace(const Ray& ray, const std::shared_ptr<Scene> scene, siz
 		size_t tIndex = candidateMeshTrianglePairs[i].second;
 		if (!insideHit && mIndex == originMeshIndex && tIndex == originTriangleIndex)
 			continue;
-		if (insideHit && mIndex == originMeshIndex) // ray is currently inside an object, 
-			continue;							    // approximation: we limit the number of hits with the same mesh by 2
+		else if (insideHit && mIndex == originMeshIndex) // ray is currently inside an object, 
+			continue;							         // approximation: we limit the number of hits with the same mesh by 2
 		const auto& mesh = scene->mesh(mIndex);
 		const auto& triangleIndices = mesh->triangleIndices();
 		const glm::uvec3& triangle = triangleIndices[tIndex];
@@ -173,7 +173,7 @@ Ray RayTracer::refractRay (const glm::vec3& wo, const glm::vec3& n, const glm::v
 glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & ray, size_t originMeshIndex, size_t originTriangleIndex, bool insideHit = false) {
 	Hit hit;
 	bool intersectionFound = rayTrace(ray, scenePtr, originMeshIndex, originTriangleIndex, hit, insideHit);
-	bool single_refraction = false;
+	bool single_refraction = true;
 	if (intersectionFound && hit.m_distance > 0.f) {
 		std::pair<glm::vec3,glm::vec3> PN = hitPN(scenePtr, hit);
 		glm::vec3 hitPosition = PN.first;
@@ -188,28 +188,21 @@ glm::vec3 RayTracer::sample (const std::shared_ptr<Scene> scenePtr, const Ray & 
 			bool inside = hit.m_meshIndex == originMeshIndex ? true : false;
 			if (transmissionK > 0) { // refraction
 				Ray refracted_ray = refractRay(wo, hitNormal, hitPosition, refraction, transmissionK);
-				if (inside) { // hit inside an object
+				if (inside) // hit inside an object
 					return sample(scenePtr, refracted_ray, hit.m_meshIndex, hit.m_triangleIndex, true);
-				}
-				else{ // mix reflected and transmitied light
+				else // mix reflected and transmitted light
 					return glm::mix(shade(scenePtr, ray, hit), sample(scenePtr, refracted_ray, hit.m_meshIndex, hit.m_triangleIndex, single_refraction), transparency);
-				}
 			}
 			else { // no refraction
-				if (inside) { // hit inside an object
+				if (inside) // hit inside an object
 					return glm::vec3(0.0); // approximation: suppose that ray lost all its energy inside the object
-				}
-				else { // reflect environment
-					float reflectance = materialPtr->reflectance();
-					return glm::mix(shade(scenePtr, ray, hit), scenePtr->backgroundColor (), reflectance);	
-				}
+				else // reflect environment
+					return glm::mix(shade(scenePtr, ray, hit), scenePtr->backgroundColor (), materialPtr->reflectance());	
 			}
 		}
-		else { // opaque 
+		else // opaque 
 			return shade(scenePtr, ray, hit);
-		}
 	} 
-	else {
+	else 
 		return scenePtr->backgroundColor ();
-	}
 }

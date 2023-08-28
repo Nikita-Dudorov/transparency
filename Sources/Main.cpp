@@ -230,8 +230,8 @@ void initGLFW () {
 
 void initScene () {
 	scenePtr = std::make_shared<Scene> ();
-	scenePtr->setBackgroundColor (glm::vec3 (0.78, 0.89, 0.88));
-	//scenePtr->setBackgroundColor (glm::vec3 (0.f, 0.f, 0.f));
+	//scenePtr->setBackgroundColor (glm::vec3 (0.78, 0.89, 0.88));
+	scenePtr->setBackgroundColor (glm::vec3 (0.f, 0.f, 0.f));
 
 	// Main object
 
@@ -272,6 +272,10 @@ void initScene () {
 	groundMeshPtr->vertexPositions().push_back (startP + glm::vec3 (0.f, 0.f, 2.f*extent));
 	groundMeshPtr->vertexPositions().push_back (startP + glm::vec3 (2.f*extent, 0.f, 2.f*extent));
 	groundMeshPtr->vertexPositions().push_back (startP + glm::vec3 (2.f*extent, 0.f, 0.f));
+	groundMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 0.f));
+	groundMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 0.f));
+	groundMeshPtr->vertexTextCoords().push_back (glm::vec2(1.f, 1.f));
+	groundMeshPtr->vertexTextCoords().push_back (glm::vec2(0.f, 1.f));
 	groundMeshPtr->triangleIndices().push_back (glm::uvec3 (0, 1, 2));
 	groundMeshPtr->triangleIndices().push_back (glm::uvec3 (0, 2, 3));
 	groundMeshPtr->recomputePerVertexNormals ();
